@@ -16,25 +16,23 @@ def readNetlist(file):
             break
 
         net, name = line.split()
-        mapping[name] = int(net)
+        mapping[name] = chr(int(net) + 64)
 
     # read gates
     gates = []
     for line in file.readlines():
         bits = line.split()
         gate = bits.pop(0)
-        ports = list(map(int, bits))
+        bits = [int(x) + 64 for x in bits]
+        ports = list(map(chr, bits))
         gates.append((gate, ports))
-
-
-
 
     return inputs, outputs, mapping, gates
 
 
 # read netlists
-inputs1, outputs1, mapping1, gates1 = readNetlist(open("xor2.net", "r"))
-inputs2, outputs2, mapping2, gates2 = readNetlist(open("xor2_nand.net", "r"))
+inputs1, outputs1, mapping1, gates1 = readNetlist(open("xor2_nand.net", "r"))
+inputs2, outputs2, mapping2, gates2 = readNetlist(open("xor2_nand_wrong.net", "r"))
 
 
 def trivial_bdd(inputs):
@@ -45,13 +43,18 @@ def trivial_bdd(inputs):
 
 def ITE_logic(logic, a, b):
     if logic == "inv":
-        return {a, 0, 1}
+        return (a, False, True)
     elif logic == "and":
-        return {a, b, 0}
+        return (a, b, False)
     elif logic == "or":
-        return {a, 1, b}
+        return (a, True, b)
     elif logic == "xor":
-        return {a, not b, b}
+        return (a, not b, b)
+
+a = True
+b = False
+logic = "and"
+ITE = ITE_logic(logic, a, b)
 
 
 trivial_bdd_1 = trivial_bdd(inputs1)
